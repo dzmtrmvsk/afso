@@ -1,8 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany, OneToOne } from 'typeorm';
-import { Organization } from './organization.entity';
-import { User } from './user.entity';
-import { Assignment } from './assignment.entity';
-import { SlaPolicy } from './sla-policy.entity';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToOne } from 'typeorm';
+import { Organization } from '../../organizations/entities/organization.entity';
+import { User } from '../../users/entities/user.entity';
+import { Assignment } from '../../assignments/entities/assignment.entity';
+import { SlaPolicy } from '../../sla/entities/sla-policy.entity';
 
 export enum TicketPriority {
   LOW = 'low',
@@ -32,10 +32,10 @@ export class Ticket {
   @Column({ type: 'text' })
   description: string;
 
-  @Column({ type: 'enum', enum: TicketPriority, default: TicketPriority.MEDIUM })
+  @Column({ type: 'enum', enum: TicketPriority, enumName: 'ticket_priority_enum', default: TicketPriority.MEDIUM })
   priority: TicketPriority;
 
-  @Column({ type: 'enum', enum: TicketStatus, default: TicketStatus.PENDING })
+  @Column({ type: 'enum', enum: TicketStatus, enumName: 'ticket_status_enum', default: TicketStatus.PENDING })
   status: TicketStatus;
 
   @ManyToOne(() => Organization, (organization) => organization.tickets)

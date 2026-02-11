@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
-import { User } from './user.entity';
-import { Team } from './team.entity';
-import { Ticket } from './ticket.entity';
+import { User } from '../../users/entities/user.entity';
+import { Team } from '../../teams/entities/team.entity';
+import { Ticket } from '../../tickets/entities/ticket.entity';
 
 @Entity('organizations')
 export class Organization {

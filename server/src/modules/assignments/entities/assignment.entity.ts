@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToOne, JoinColumn } from 'typeorm';
-import { Ticket } from './ticket.entity';
-import { User } from './user.entity';
+import { Ticket } from '../../tickets/entities/ticket.entity';
+import { User } from '../../users/entities/user.entity';
 
 export enum AssignmentStatus {
   PENDING = 'pending',
@@ -28,7 +28,7 @@ export class Assignment {
   @Column()
   agentId: string;
 
-  @Column({ type: 'enum', enum: AssignmentStatus, default: AssignmentStatus.PENDING })
+  @Column({ type: 'enum', enum: AssignmentStatus, enumName: 'assignment_status_enum', default: AssignmentStatus.PENDING })
   status: AssignmentStatus;
 
   @Column({ default: false })

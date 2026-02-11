@@ -127,65 +127,6 @@ project/
 - Docker containerization
 - Deployment automation
 
-## Key User Stories
-
-### US-01: Create Ticket with Auto-Assignment
-**As a dispatcher**, I want to create a ticket with priority and location, so that a field agent can be assigned and reach the site.
-
-**Acceptance Criteria**:
-- POST /api/tickets returns 201
-- Ticket stored in PostgreSQL
-- Event appended in MongoDB
-- Ticket appears in frontend queue within 2 seconds
-
-### US-02: Automatic Assignment Based on Load
-**As a system**, I want to auto-assign tickets based on team skill and current load, so that manual distribution decreases.
-
-**Acceptance Criteria**:
-- Worker receives ticket from BullMQ
-- Selects executor with lowest load (<=10% difference)
-- Creates Assignment record in database
-
-### US-03: SLA Timer and Escalation
-**As a manager**, I want SLA timer to start on ticket creation and escalate at breach, so that I get notified if SLA is violated.
-
-**Acceptance Criteria**:
-- SLA job scheduled in BullMQ on ticket creation
-- On timer expiration, escalation event is created
-- Notification sent to manager
-
-### US-04: Ticket Status Management
-**As an operator**, I want to take a ticket and change status to In Progress, so that others see it is occupied.
-
-**Acceptance Criteria**:
-- PATCH /api/tickets/:id/status updates PostgreSQL
-- Event written to MongoDB
-- UI shows "In Progress" in real-time
-
-## Real-World Use Case
-
-**Scenario**: Office equipment repair company
-
-1. **Client submits ticket**: "Printer not printing"
-2. **System automatically**:
-   - Places ticket in queue
-   - Assigns available technician based on location and skills
-   - Starts SLA timer (e.g., 2 hours for response)
-3. **If technician does not start on time**:
-   - System sends notification to manager
-   - Can automatically reassign to another available technician
-4. **Manager dashboard shows**:
-   - Total active tickets
-   - Agents with highest load
-   - SLA violations and near-breach tickets
-
-**Benefits**:
-- Zero lost tickets
-- Faster response times
-- Reduced coordination overhead
-- Fewer SLA penalties
-- No manual tracking via calls or Excel
-
 ## Development Workflow
 
 ### Agile Process
@@ -204,11 +145,11 @@ This aligns with academic requirements for backlog management and sprint executi
 ## Setup Instructions
 
 ### Prerequisites
-- Node.js 18+
-- PostgreSQL 14+
+- Node.js 24+
+- PostgreSQL 17+
 - MongoDB 6+
 - Redis 7+
-- Docker (optional, recommended)
+- Docker
 
 ### Backend Setup
 ```bash

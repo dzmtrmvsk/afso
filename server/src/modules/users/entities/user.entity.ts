@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany } from 'typeorm';
-import { Organization } from './organization.entity';
-import { Assignment } from './assignment.entity';
+import { Organization } from '../../organizations/entities/organization.entity';
+import { Assignment } from '../../assignments/entities/assignment.entity';
 
 export enum UserRole {
   ADMIN = 'admin',
@@ -32,10 +32,10 @@ export class User {
   @Column()
   lastName: string;
 
-  @Column({ type: 'enum', enum: UserRole })
+  @Column({ type: 'enum', enum: UserRole, enumName: 'user_role_enum' })
   role: UserRole;
 
-  @Column({ type: 'enum', enum: UserStatus, default: UserStatus.ACTIVE })
+  @Column({ type: 'enum', enum: UserStatus, enumName: 'user_status_enum', default: UserStatus.ACTIVE })
   status: UserStatus;
 
   @Column({ nullable: true })
