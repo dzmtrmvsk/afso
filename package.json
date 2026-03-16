@@ -1,0 +1,30 @@
+{
+  "name": "afso",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Adaptive Field Service Orchestrator — SaaS platform for field crew management",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "dev:api": "npm run dev --workspace=apps/api",
+    "dev:web": "npm run dev --workspace=apps/web",
+    "build:api": "npm run build --workspace=apps/api",
+    "build:web": "npm run build --workspace=apps/web",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:destroy": "docker compose down -v",
+    "docker:logs": "docker compose logs -f"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  },
+  "devDependencies": {
+    "turbo": "^2.3.0"
+  }
+}

@@ -1,0 +1,172 @@
+version: "3.9"
+
+services:
+  # ─── PostgreSQL 16 ──────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: afso-postgres
+    restart: unless-stopped
+    ports:
+      - "${POSTGRES_PORT:-5433}:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-afso_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-afso_secret_pg_2024}
+      POSTGRES_DB: ${POSTGRES_DB:-afso_db}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-afso_user} -d ${POSTGRES_DB:-afso_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - afso-net
+
+  # ─── MongoDB 7 ──────────────────────────────────────────
+  mongo:
+    image: mongo:7
+    container_name: afso-mongo
+    restart: unless-stopped
+    ports:
+      - "${MONGO_PORT:-27018}:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-afso_mongo}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-afso_secret_mongo_2024}
+    volumes:
+      - mongodata:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')", "--quiet"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - afso-net
+
+  # ─── Redis 7 ───────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: afso-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6380}:6379"
+    command: redis-server --requirepass ${REDIS_PASSWORD:-afso_secret_redis_2024} --appendonly yes
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-afso_secret_redis_2024}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - afso-net
+
+  # ─── pgAdmin (Dev tool) ────────────────────────────────
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: afso-pgadmin
+    restart: unless-stopped
+    profiles:
+      - tools
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@afso.local}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin_pgadmin_2024}
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    volumes:
+      - pgadmindata:/var/lib/pgadmin
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - afso-net
+
+  # ─── Mongo Express (Dev tool) ──────────────────────────
+  mongo-express:
+    image: mongo-express:latest
+    container_name: afso-mongo-express
+    restart: unless-stopped
+    profiles:
+      - tools
+    ports:
+      - "${MONGO_EXPRESS_PORT:-8082}:8081"
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_INITDB_ROOT_USERNAME:-afso_mongo}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-afso_secret_mongo_2024}
+      ME_CONFIG_MONGODB_URL: mongodb://${MONGO_INITDB_ROOT_USERNAME:-afso_mongo}:${MONGO_INITDB_ROOT_PASSWORD:-afso_secret_mongo_2024}@mongo:27017/
+      ME_CONFIG_BASICAUTH: "false"
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - afso-net
+
+  # ─── API (NestJS) — dev mode ───────────────────────────
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+      target: development
+    container_name: afso-api
+    restart: unless-stopped
+    ports:
+      - "${API_PORT:-3000}:3000"
+    env_file:
+      - .env
+    environment:
+      # Override hosts to use Docker service names
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      MONGO_HOST: mongo
+      MONGO_PORT: 27017
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    volumes:
+      - ./apps/api/src:/app/src
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - afso-net
+
+  # ─── Web (React/Vite) — dev mode ──────────────────────
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+      target: development
+    container_name: afso-web
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT:-5173}:5173"
+    volumes:
+      - ./apps/web/src:/app/src
+      - /app/node_modules
+    environment:
+      VITE_API_URL: http://api:3000
+    depends_on:
+      - api
+    networks:
+      - afso-net
+
+volumes:
+  pgdata:
+    driver: local
+  mongodata:
+    driver: local
+  redisdata:
+    driver: local
+  pgadmindata:
+    driver: local
+
+networks:
+  afso-net:
+    driver: bridge
