@@ -33,7 +33,7 @@ export class Webhook {
   @Column()
   url: string;
 
-  @Column({ type: 'enum', enum: WebhookEventType, array: true })
+  @Column({ type: 'simple-array' })
   events: WebhookEventType[];
 
   @Column({ type: 'jsonb', nullable: true })

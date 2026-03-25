@@ -39,7 +39,7 @@ export class Notification {
   @Column({ type: 'enum', enum: NotificationType })
   type: NotificationType;
 
-  @Column({ type: 'enum', enum: NotificationChannel, array: true })
+  @Column({ type: 'simple-array' })
   channels: NotificationChannel[];
 
   @Column()

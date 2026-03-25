@@ -22,9 +22,13 @@ export class UsersService {
     });
   }
 
-  async findOne(id: string): Promise<User> {
+  async findOne(id: string, organizationId?: string): Promise<User> {
+    const where: { id: string; organizationId?: string } = { id };
+    if (organizationId) {
+      where.organizationId = organizationId;
+    }
     const user = await this.userRepository.findOne({ 
-      where: { id },
+      where,
       relations: ['organization']
     });
     if (!user) {

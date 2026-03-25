@@ -28,7 +28,7 @@ export class Assignment {
   @Column()
   agentId: string;
 
-  @Column({ type: 'enum', enum: AssignmentStatus, enumName: 'assignment_status_enum', default: AssignmentStatus.PENDING })
+  @Column({ type: 'enum', enum: AssignmentStatus, default: AssignmentStatus.PENDING })
   status: AssignmentStatus;
 
   @Column({ default: false })

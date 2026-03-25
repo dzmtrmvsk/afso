@@ -39,10 +39,10 @@ export class Ticket {
   @Column({ type: 'text' })
   description: string;
 
-  @Column({ type: 'enum', enum: TicketPriority, enumName: 'ticket_priority_enum', default: TicketPriority.MEDIUM })
+  @Column({ type: 'enum', enum: TicketPriority, default: TicketPriority.MEDIUM })
   priority: TicketPriority;
 
-  @Column({ type: 'enum', enum: TicketStatus, enumName: 'ticket_status_enum', default: TicketStatus.PENDING })
+  @Column({ type: 'enum', enum: TicketStatus, default: TicketStatus.PENDING })
   status: TicketStatus;
 
   @ManyToOne(() => Organization, (organization) => organization.tickets)

@@ -1,6 +1,12 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne } from 'typeorm';
 import { Organization } from '../../organizations/entities/organization.entity';
-import { TicketPriority } from '../../tickets/entities/ticket.entity';
+
+export enum TicketPriority {
+  LOW = 'low',
+  MEDIUM = 'medium',
+  HIGH = 'high',
+  URGENT = 'urgent',
+}
 
 @Entity('sla_policies')
 export class SlaPolicy {
@@ -19,7 +25,7 @@ export class SlaPolicy {
   @Column()
   organizationId: string;
 
-  @Column({ type: 'enum', enum: TicketPriority, enumName: 'ticket_priority_enum' })
+  @Column({ type: 'enum', enum: TicketPriority })
   priority: TicketPriority;
 
   @Column({ type: 'int' })

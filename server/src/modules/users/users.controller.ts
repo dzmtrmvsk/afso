@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Query } from '@nestjs/common';
+import { Controller, Get, Body, Patch, Param, UseGuards, Request } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UserRole } from './entities/user.entity';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -13,7 +13,7 @@ export class UsersController {
 
   @Get('profile')
   getProfile(@Request() req: AuthenticatedRequest) {
-    return this.usersService.findOne(req.user.userId);
+    return this.usersService.findOne(req.user.userId, req.user.organizationId);
   }
 
   @Get()
@@ -24,8 +24,8 @@ export class UsersController {
 
   @Get(':id')
   @Roles(UserRole.ADMIN, UserRole.MANAGER)
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(id);
+  findOne(@Param('id') id: string, @Request() req: AuthenticatedRequest) {
+    return this.usersService.findOne(id, req.user.organizationId);
   }
 
   @Patch(':id/load')
