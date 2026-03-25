@@ -1,0 +1,829 @@
+@startuml AFSO Entity Relationship Diagram
+
+!define primary_key(x) <b><color:red>PK:</color> x</b>
+!define foreign_key(x) <color:blue>FK:</color> x
+!define unique(x) <color:green>UK:</color> x
+
+' Core Entities
+class Organization {
+  primary_key(id: UUID)
+  unique(name: string)
+  unique(slug: string)
+  description: text
+  isActive: boolean
+  settings: jsonb
+  createdAt: timestamp
+  updatedAt: timestamp
+}
+
+class User {
+  primary_key(id: UUID)
+  unique(email: string)
+  password: string
+  firstName: string
+  lastName: string
+  role: UserRole
+  status: UserStatus
+  phone: string
+  foreign_key(organizationId: UUID)
+  skills: jsonb
+  currentLoad: integer
+  createdAt: timestamp
+  updatedAt: timestamp
+}
+
+enum UserRole {
+  ADMIN
+  MANAGER
+  DISPATCHER
+  AGENT
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+class Team {
+  primary_key(id: UUID)
+  name: string
+  description: text
+  foreign_key(organizationId: UUID)
+  skills: jsonb
+  createdAt: timestamp
+  updatedAt: timestamp
+}
+
+class Ticket {
+  primary_key(id: UUID)
+  title: string
+  description: text
+  priority: TicketPriority
+  status: TicketStatus
+  foreign_key(organizationId: UUID)
+  foreign_key(createdById: UUID)
+  foreign_key(slaPolicyId: UUID)
+  foreign_key(locationId: UUID)
+  foreign_key(customerId: UUID)
+  foreign_key(serviceTypeId: UUID)
+  slaDeadline: timestamp
+  slaBreached: boolean
+  customFields: jsonb
+  requiredSkills: jsonb
+  estimatedDurationMinutes: integer
+  createdAt: timestamp
+  updatedAt: timestamp
+  resolvedAt: timestamp
+  closedAt: timestamp
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TicketStatus {
+  PENDING
+  IN_QUEUE
+  ASSIGNED
+  IN_PROGRESS
+  ON_HOLD
+  RESOLVED
+  CLOSED
+}
+
+class Assignment {
+  primary_key(id: UUID)
+  foreign_key(ticketId: UUID)
+  foreign_key(agentId: UUID)
+  status: AssignmentStatus
+  isAutoAssigned: boolean
+  notes: text
+  acceptedAt: timestamp
+  startedAt: timestamp
+  completedAt: timestamp
+  createdAt: timestamp
+  updatedAt: timestamp
+}
+
+enum AssignmentStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  IN_PROGRESS
+  COMPLETED
+}
+
+class SlaPolicy {
+  primary_key(id: UUID)
+  name: string
+  description: text
+  foreign_key(organizationId: UUID)
+  priority: TicketPriority
+  responseTimeMinutes: integer
+  resolutionTimeMinutes: integer
+  isActive: boolean
+  escalateOnBreach: boolean
+  escalationRules: jsonb
+  createdAt: timestamp
+  updatedAt: timestamp
+}
+
+' Ticket Related Entities
+class TicketComment {
+  primary_key(id: UUID)
+  foreign_key(ticketId: UUID)
+  foreign_key(authorId: UUID)
+  content: text
+  attachments: jsonb
+  isInternal: boolean
+  createdAt: timestamp
+  updatedAt: timestamp
+}
+
+class TicketHistory {
+  primary_key(id: UUID)
+  foreign_key(ticketId: UUID)
+  foreign_key(changedById: UUID)
+  action: HistoryAction
+  oldValue: jsonb
+  newValue: jsonb
+  description: text
+  createdAt: timestamp
+}
+
+enum HistoryAction {
+  CREATED
+  STATUS_CHANGED
+  PRIORITY_CHANGED
+  ASSIGNED
+  REASSIGNED
+  UNASSIGNED
+  COMMENT_ADDED
+  SLA_SET
+  SLA_BREACHED
+  ESCALATED
+  RESOLVED
+  CLOSED
+  REOPENED
+  CUSTOM_FIELD_CHANGED
+}
+
+class TicketAttachment {
+  primary_key(id: UUID)
+  foreign_key(ticketId: UUID)
+  foreign_key(uploadedById: UUID)
+  filename: string
+  fileUrl: string
+  fileSize: integer
+  mimeType: string
+  description: text
+  createdAt: timestamp
+}
+
+class Escalation {
+  primary_key(id: UUID)
+  foreign_key(ticketId: UUID)
+  foreign_key(organizationId: UUID)
+  foreign_key(escalatedToId: UUID)
+  level: EscalationLevel
+  status: EscalationStatus
+  reason: text
+  escalatedAt: timestamp
+  resolvedAt: timestamp
+  notificationsSent: jsonb
+  createdAt: timestamp
+  updatedAt: timestamp
+}
+
+enum EscalationLevel {
+  LEVEL_1
+  LEVEL_2
+  LEVEL_3
+  CRITICAL
+}
+
+enum EscalationStatus {
+  PENDING
+  IN_PROGRESS
+  RESOLVED
+  CANCELLED
+}
+
+' Customer & Service Management
+class Customer {
+  primary_key(id: UUID)
+  name: string
+  unique(email: string)
+  phone: string
+  description: text
+  foreign_key(organizationId: UUID)
+  status: CustomerStatus
+  address: string
+  city: string
+  country: string
+  customFields: jsonb
+  createdAt: timestamp
+  updatedAt: timestamp
+}
+
+enum CustomerStatus {
+  ACTIVE
+  INACTIVE
+  BLOCKED
+  SUSPENDED
+}
+
+class ServiceType {
+  primary_key(id: UUID)
+  name: string
+  description: text
+  foreign_key(organizationId: UUID)
+  estimatedDurationMinutes: integer
+  baseCost: decimal
+  requiredSkills: jsonb
+  isActive: boolean
+  createdAt: timestamp
+  updatedAt: timestamp
+}
+
+' Location Management
+class Location {
+  primary_key(id: UUID)
+  name: string
+  description: text
+  foreign_key(organizationId: UUID)
+  type: LocationType
+  address: string
+  city: string
+  state: string
+  postalCode: string
+  country: string
+  latitude: decimal
+  longitude: decimal
+  serviceRadius: jsonb
+  isActive: boolean
+  createdAt: timestamp
+  updatedAt: timestamp
+}
+
+enum LocationType {
+  OFFICE
+  WAREHOUSE
+  SERVICE_AREA
+  CUSTOMER_SITE
+  OTHER
+}
+
+' Skills Management
+class SkillCategory {
+  primary_key(id: UUID)
+  name: string
+  description: text
+  foreign_key(organizationId: UUID)
+  priority: integer
+  isActive: boolean
+  createdAt: timestamp
+  updatedAt: timestamp
+}
+
+class Skill {
+  primary_key(id: UUID)
+  name: string
+  description: text
+  foreign_key(categoryId: UUID)
+  foreign_key(organizationId: UUID)
+  proficiencyLevel: integer
+  isActive: boolean
+  metadata: jsonb
+  createdAt: timestamp
+  updatedAt: timestamp
+}
+
+' Queue Management
+class Queue {
+  primary_key(id: UUID)
+  name: string
+  description: text
+  foreign_key(organizationId: UUID)
+  strategy: QueueStrategy
+  itemCount: integer
+  processingCount: integer
+  completedCount: integer
+  rules: jsonb
+  isActive: boolean
+  createdAt: timestamp
+  updatedAt: timestamp
+}
+
+enum QueueStrategy {
+  FIFO
+  PRIORITY
+  LOAD_BALANCED
+  SKILL_BASED
+  ROUND_ROBIN
+}
+
+class QueueItem {
+  primary_key(id: UUID)
+  foreign_key(queueId: UUID)
+  foreign_key(ticketId: UUID)
+  status: QueueItemStatus
+  priority: integer
+  retryCount: integer
+  processedAt: timestamp
+  completedAt: timestamp
+  errorMessage: text
+  payload: jsonb
+  metadata: jsonb
+  createdAt: timestamp
+  updatedAt: timestamp
+}
+
+enum QueueItemStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  RETRYING
+  SKIPPED
+}
+
+' Billing & Subscription
+class Invoice {
+  primary_key(id: UUID)
+  unique(invoiceNumber: string)
+  foreign_key(organizationId: UUID)
+  amount: decimal
+  paidAmount: decimal
+  status: InvoiceStatus
+  issueDate: date
+  dueDate: date
+  paidDate: date
+  description: text
+  lineItems: jsonb
+  createdAt: timestamp
+  updatedAt: timestamp
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+class Subscription {
+  primary_key(id: UUID)
+  foreign_key(organizationId: UUID)
+  foreign_key(planId: UUID)
+  status: SubscriptionStatus
+  startDate: date
+  endDate: date
+  renewalDate: date
+  monthlyPrice: decimal
+  userCount: integer
+  ticketsProcessed: integer
+  autoRenew: boolean
+  features: jsonb
+  createdAt: timestamp
+  updatedAt: timestamp
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAUSED
+  CANCELLED
+  EXPIRED
+  TRIAL
+}
+
+class SubscriptionPlan {
+  primary_key(id: UUID)
+  name: string
+  type: PlanType
+  description: text
+  monthlyPrice: decimal
+  annualPrice: decimal
+  maxUsers: integer
+  maxTicketsPerMonth: integer
+  maxTeams: integer
+  features: jsonb
+  limits: jsonb
+  isActive: boolean
+  createdAt: timestamp
+  updatedAt: timestamp
+}
+
+enum PlanType {
+  STARTER
+  PROFESSIONAL
+  ENTERPRISE
+  CUSTOM
+}
+
+' Notifications
+class Notification {
+  primary_key(id: UUID)
+  foreign_key(recipientId: UUID)
+  foreign_key(organizationId: UUID)
+  type: NotificationType
+  channels: NotificationChannel[]
+  title: string
+  message: text
+  metadata: jsonb
+  isRead: boolean
+  readAt: timestamp
+  relatedEntityId: UUID
+  relatedEntityType: string
+  createdAt: timestamp
+}
+
+enum NotificationType {
+  ASSIGNMENT
+  SLA_WARNING
+  SLA_BREACH
+  ESCALATION
+  COMMENT
+  STATUS_CHANGE
+  SYSTEM
+}
+
+enum NotificationChannel {
+  IN_APP
+  EMAIL
+  SMS
+  TELEGRAM
+}
+
+' Integrations
+class Integration {
+  primary_key(id: UUID)
+  name: string
+  type: IntegrationType
+  foreign_key(organizationId: UUID)
+  status: IntegrationStatus
+  description: text
+  config: jsonb
+  credentials: jsonb
+  metadata: jsonb
+  lastSyncAt: timestamp
+  lastErrorAt: timestamp
+  lastError: text
+  isActive: boolean
+  createdAt: timestamp
+  updatedAt: timestamp
+}
+
+enum IntegrationType {
+  WEBHOOK
+  API
+  EMAIL
+  TELEGRAM
+  SLACK
+  ZAPIER
+  CUSTOM
+}
+
+enum IntegrationStatus {
+  ACTIVE
+  INACTIVE
+  ERROR
+  PENDING
+}
+
+' Webhooks
+class Webhook {
+  primary_key(id: UUID)
+  name: string
+  foreign_key(organizationId: UUID)
+  url: string
+  events: WebhookEventType[]
+  headers: jsonb
+  metadata: jsonb
+  isActive: boolean
+  failureCount: integer
+  lastDeliveredAt: timestamp
+  lastFailedAt: timestamp
+  createdAt: timestamp
+  updatedAt: timestamp
+}
+
+enum WebhookEventType {
+  TICKET_CREATED
+  TICKET_UPDATED
+  TICKET_ASSIGNED
+  TICKET_RESOLVED
+  TICKET_CLOSED
+  ASSIGNMENT_CREATED
+  ASSIGNMENT_ACCEPTED
+  ASSIGNMENT_DECLINED
+  ASSIGNMENT_COMPLETED
+  SLA_BREACHED
+  ESCALATION_TRIGGERED
+}
+
+class WebhookEvent {
+  primary_key(id: UUID)
+  foreign_key(webhookId: UUID)
+  eventType: string
+  payload: jsonb
+  status: WebhookDeliveryStatus
+  attemptCount: integer
+  httpStatusCode: integer
+  responseBody: text
+  deliveredAt: timestamp
+  nextRetryAt: timestamp
+  createdAt: timestamp
+}
+
+enum WebhookDeliveryStatus {
+  PENDING
+  DELIVERED
+  FAILED
+  RETRYING
+}
+
+' Permissions & Roles
+class Permission {
+  primary_key(id: UUID)
+  resource: PermissionResource
+  action: PermissionAction
+  description: string
+  createdAt: timestamp
+  updatedAt: timestamp
+}
+
+enum PermissionResource {
+  TICKETS
+  ASSIGNMENTS
+  USERS
+  TEAMS
+  ORGANIZATIONS
+  REPORTS
+  SETTINGS
+  INTEGRATIONS
+  SLA
+  QUEUES
+  ANALYTICS
+}
+
+enum PermissionAction {
+  CREATE
+  READ
+  UPDATE
+  DELETE
+  EXECUTE
+}
+
+class Role {
+  primary_key(id: UUID)
+  name: string
+  description: text
+  foreign_key(organizationId: UUID)
+  isSystem: boolean
+  isActive: boolean
+  createdAt: timestamp
+  updatedAt: timestamp
+}
+
+class RoleAssignment {
+  primary_key(id: UUID)
+  foreign_key(userId: UUID)
+  foreign_key(roleId: UUID)
+  foreign_key(organizationId: UUID)
+  validFrom: date
+  validUntil: date
+  createdAt: timestamp
+  updatedAt: timestamp
+}
+
+' Audit & Analytics
+class AuditLog {
+  primary_key(id: UUID)
+  foreign_key(organizationId: UUID)
+  foreign_key(actorId: UUID)
+  action: AuditAction
+  entityType: string
+  entityId: UUID
+  changes: jsonb
+  metadata: jsonb
+  ipAddress: string
+  userAgent: string
+  createdAt: timestamp
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  READ
+  LOGIN
+  LOGOUT
+  EXPORT
+  IMPORT
+  PERMISSION_CHANGE
+  SETTINGS_CHANGE
+}
+
+class Metric {
+  primary_key(id: UUID)
+  foreign_key(organizationId: UUID)
+  type: MetricType
+  value: decimal
+  unit: string
+  date: date
+  dimensions: jsonb
+  metadata: jsonb
+  createdAt: timestamp
+}
+
+enum MetricType {
+  SLA_COMPLIANCE
+  AGENT_PERFORMANCE
+  QUEUE_LENGTH
+  AVERAGE_RESOLUTION_TIME
+  CUSTOMER_SATISFACTION
+  TICKET_VOLUME
+  RESPONSE_TIME
+  ESCALATION_RATE
+}
+
+class Report {
+  primary_key(id: UUID)
+  name: string
+  type: ReportType
+  foreign_key(organizationId: UUID)
+  foreign_key(createdById: UUID)
+  status: ReportStatus
+  startDate: date
+  endDate: date
+  filters: jsonb
+  data: jsonb
+  fileUrl: string
+  errorMessage: text
+  completedAt: timestamp
+  createdAt: timestamp
+  updatedAt: timestamp
+}
+
+enum ReportType {
+  SLA_COMPLIANCE
+  AGENT_PERFORMANCE
+  QUEUE_ANALYSIS
+  FINANCIAL
+  CUSTOM
+}
+
+enum ReportStatus {
+  PENDING
+  GENERATING
+  READY
+  FAILED
+}
+
+' Relationships - Organization as root
+Organization "1" --> "0..*" User : manages
+Organization "1" --> "0..*" Team : contains
+Organization "1" --> "0..*" Ticket : owns
+Organization "1" --> "0..*" Invoice : bills
+Organization "1" --> "0..*" Notification : sends
+Organization "1" --> "0..*" Location : has
+Organization "1" --> "0..*" SkillCategory : defines
+Organization "1" --> "0..*" Integration : configures
+Organization "1" --> "0..*" Queue : manages
+Organization "1" --> "0..1" Subscription : subscribes
+Organization "1" --> "0..*" Role : defines
+Organization "1" --> "0..*" AuditLog : logs
+Organization "1" --> "0..*" Metric : tracks
+Organization "1" --> "0..*" Report : generates
+Organization "1" --> "0..*" Webhook : configures
+Organization "1" --> "0..*" Customer : serves
+Organization "1" --> "0..*" ServiceType : offers
+Organization "1" --> "0..*" SlaPolicy : enforces
+Organization "1" --> "0..*" Escalation : handles
+
+' User relationships
+User "0..*" --> "1" Organization : belongs_to
+User "1" --> "0..*" Assignment : assigned
+User "1" --> "0..*" Notification : receives
+User "0..*" <--> "0..*" Team : member_of
+
+' Ticket relationships
+Ticket "0..*" --> "1" Organization : belongs_to
+Ticket "0..*" --> "0..1" User : created_by
+Ticket "1" --> "0..1" Assignment : has
+Ticket "0..*" --> "0..1" SlaPolicy : follows
+Ticket "0..*" --> "0..1" Location : at
+Ticket "0..*" --> "0..1" Customer : for
+Ticket "0..*" --> "0..1" ServiceType : type
+Ticket "1" --> "0..*" TicketComment : has
+Ticket "1" --> "0..*" TicketHistory : tracks
+Ticket "1" --> "0..*" TicketAttachment : has
+Ticket "1" --> "0..*" Escalation : escalates
+
+' Assignment relationships
+Assignment "1" --> "1" Ticket : assigns
+Assignment "0..*" --> "1" User : to_agent
+
+' Team relationships
+Team "0..*" --> "1" Organization : belongs_to
+
+' Skills relationships
+SkillCategory "0..*" --> "1" Organization : belongs_to
+SkillCategory "1" --> "0..*" Skill : contains
+Skill "0..*" --> "1" SkillCategory : in
+Skill "0..*" --> "1" Organization : belongs_to
+
+' Queue relationships
+Queue "0..*" --> "1" Organization : belongs_to
+Queue "1" --> "0..*" QueueItem : contains
+QueueItem "0..*" --> "1" Queue : in
+QueueItem "0..*" --> "0..1" Ticket : processes
+
+' Subscription relationships
+Subscription "0..1" --> "1" Organization : for
+Subscription "0..*" --> "1" SubscriptionPlan : uses
+
+' Location relationships
+Location "0..*" --> "1" Organization : belongs_to
+Location "1" --> "0..*" Ticket : serves
+
+' Customer relationships
+Customer "0..*" --> "1" Organization : belongs_to
+Customer "1" --> "0..*" Ticket : requests
+
+' ServiceType relationships
+ServiceType "0..*" --> "1" Organization : belongs_to
+ServiceType "1" --> "0..*" Ticket : classifies
+
+' Notification relationships
+Notification "0..*" --> "1" User : to
+Notification "0..*" --> "1" Organization : from
+
+' Integration & Webhook relationships
+Integration "0..*" --> "1" Organization : for
+Webhook "0..*" --> "1" Organization : for
+Webhook "1" --> "0..*" WebhookEvent : delivers
+
+' Permissions relationships
+Role "0..*" --> "1" Organization : for
+Role "0..*" <--> "0..*" Permission : has
+RoleAssignment "0..*" --> "1" User : to
+RoleAssignment "0..*" --> "1" Role : assigns
+RoleAssignment "0..*" --> "1" Organization : in
+
+' Audit relationships
+AuditLog "0..*" --> "1" Organization : for
+AuditLog "0..*" --> "0..1" User : by
+
+' Analytics relationships
+Metric "0..*" --> "1" Organization : for
+Report "0..*" --> "1" Organization : for
+Report "0..*" --> "1" User : created_by
+
+' Escalation relationships
+Escalation "0..*" --> "1" Ticket : for
+Escalation "0..*" --> "1" Organization : in
+Escalation "0..*" --> "0..1" User : escalated_to
+
+' Ticket detail relationships
+TicketComment "0..*" --> "1" Ticket : on
+TicketComment "0..*" --> "1" User : by
+TicketHistory "0..*" --> "1" Ticket : tracks
+TicketHistory "0..*" --> "0..1" User : changed_by
+TicketAttachment "0..*" --> "1" Ticket : attached_to
+TicketAttachment "0..*" --> "1" User : uploaded_by
+
+' Invoice relationships
+Invoice "0..*" --> "1" Organization : bills
+
+note right of Organization
+  **Root Aggregate**
+  Multi-tenant container
+  Owns all domain data
+end note
+
+note right of Ticket
+  **Core Domain Entity**
+  Central work item
+  Drives all workflows
+end note
+
+note right of Queue
+  **Queue Management**
+  Intelligent distribution
+  Load balancing & SLA
+end note
+
+note right of SlaPolicy
+  **SLA Enforcement**
+  Timers & Escalations
+  Breach detection
+end note
+
+@enduml

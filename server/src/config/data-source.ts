@@ -16,6 +16,6 @@ export const AppDataSource = new DataSource({
   entities: [join(__dirname, '../modules/**/*.entity{.ts,.js}')],
   migrations: [join(__dirname, './migrations/*{.ts,.js}')],
   migrationsTableName: 'typeorm_migrations',
-  synchronize: false,
+  synchronize: true,
   logging: !isProduction ? ['query', 'error', 'migration'] : ['error'],
 });

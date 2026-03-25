@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany } from 'typeorm';
 import { Organization } from '../../organizations/entities/organization.entity';
 import { Assignment } from '../../assignments/entities/assignment.entity';
+import { Notification } from '../../notifications/entities/notification.entity';
 
 export enum UserRole {
   ADMIN = 'admin',
@@ -32,10 +33,10 @@ export class User {
   @Column()
   lastName: string;
 
-  @Column({ type: 'enum', enum: UserRole, enumName: 'user_role_enum' })
+  @Column({ type: 'enum', enum: UserRole })
   role: UserRole;
 
-  @Column({ type: 'enum', enum: UserStatus, enumName: 'user_status_enum', default: UserStatus.ACTIVE })
+  @Column({ type: 'enum', enum: UserStatus, default: UserStatus.ACTIVE })
   status: UserStatus;
 
   @Column({ nullable: true })
@@ -49,6 +50,9 @@ export class User {
 
   @OneToMany(() => Assignment, (assignment) => assignment.agent)
   assignments: Assignment[];
+
+  @OneToMany(() => Notification, (notification) => notification.recipient)
+  notifications: Notification[];
 
   @Column({ type: 'jsonb', nullable: true })
   skills: string[];
