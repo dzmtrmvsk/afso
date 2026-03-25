@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany } from 'typeorm';
 import { Organization } from '../../organizations/entities/organization.entity';
 import { Assignment } from '../../assignments/entities/assignment.entity';
+import { Notification } from '../../notifications/entities/notification.entity';
 
 export enum UserRole {
   ADMIN = 'admin',
@@ -49,6 +50,9 @@ export class User {
 
   @OneToMany(() => Assignment, (assignment) => assignment.agent)
   assignments: Assignment[];
+
+  @OneToMany(() => Notification, (notification) => notification.recipient)
+  notifications: Notification[];
 
   @Column({ type: 'jsonb', nullable: true })
   skills: string[];
