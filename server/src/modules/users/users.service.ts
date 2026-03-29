@@ -37,6 +37,13 @@ export class UsersService {
     return user;
   }
 
+  async findAllByOrganization(organizationId: string): Promise<User[]> {
+    return this.userRepository.find({
+      where: { organizationId },
+      order: { createdAt: 'DESC' },
+    });
+  }
+
   async findAllAgents(organizationId: string): Promise<User[]> {
     return this.userRepository.find({
       where: { 
