@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne } from 'typeorm';
 import { SkillCategory } from './skill-category.entity';
-import { Organization } from '../../organizations/entities/organization.entity';
+import { Organization } from '../../modules/organizations/entities/organization.entity';
 
 @Entity('skills')
 export class Skill {

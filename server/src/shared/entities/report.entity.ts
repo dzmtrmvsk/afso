@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne } from 'typeorm';
-import { Organization } from '../../organizations/entities/organization.entity';
-import { User } from '../../users/entities/user.entity';
+import { Organization } from '../../modules/organizations/entities/organization.entity';
+import { User } from '../../modules/users/entities/user.entity';
 
 export enum ReportType {
   SLA_COMPLIANCE = 'sla_compliance',

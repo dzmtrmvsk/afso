@@ -22,7 +22,19 @@ async function bootstrap() {
 
     app.enableShutdownHooks();
 
-    app.use(helmet());
+    app.use(
+      helmet({
+        contentSecurityPolicy: {
+          directives: {
+            defaultSrc: ["'self'"],
+            connectSrc: ["'self'", process.env.CORS_ORIGIN || 'http://localhost:5173', 'ws:', 'wss:'],
+            scriptSrc: ["'self'"],
+            styleSrc: ["'self'", "'unsafe-inline'"],
+            imgSrc: ["'self'", 'data:', 'https:'],
+          },
+        },
+      }),
+    );
     app.use(cookieParser());
 
     app.useGlobalPipes(

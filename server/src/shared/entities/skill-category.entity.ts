@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany } from 'typeorm';
-import { Organization } from '../../organizations/entities/organization.entity';
+import { Organization } from '../../modules/organizations/entities/organization.entity';
 import { Skill } from './skill.entity';
 
 @Entity('skill_categories')

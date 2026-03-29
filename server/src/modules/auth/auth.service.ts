@@ -15,6 +15,15 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
+  private buildJwtPayload(userId: string, email: string, organizationId: string, role: UserRole) {
+    return {
+      sub: userId,
+      email,
+      orgId: organizationId,
+      role,
+    };
+  }
+
   async register(registerDto: RegisterDto) {
     const existingUser = await this.usersService.findByEmail(registerDto.email);
     if (existingUser) {
@@ -34,7 +43,7 @@ export class AuthService {
       organizationId: organization.id,
     });
 
-    const payload = { sub: user.id, email: user.email, orgId: organization.id, role: user.role };
+    const payload = this.buildJwtPayload(user.id, user.email, organization.id, user.role);
     
     const { password, ...userResult } = user;
     return {
@@ -54,7 +63,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const payload = { sub: user.id, email: user.email, orgId: user.organizationId, role: user.role };
+    const payload = this.buildJwtPayload(user.id, user.email, user.organizationId, user.role);
     
     const { password, ...userResult } = user;
     return {
