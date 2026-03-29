@@ -18,6 +18,9 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/src ./src
 COPY --from=builder /app/tsconfig*.json ./
 
+COPY --from=builder /app/entrypoint.sh ./entrypoint.sh
+RUN chmod +x ./entrypoint.sh
+
 EXPOSE 3000
 
-CMD ["node", "dist/src/main"]
+CMD ["./entrypoint.sh"]
