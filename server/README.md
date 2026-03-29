@@ -210,7 +210,105 @@ npm run format         # Format code with Prettier
 
 ## Testing
 
-Testing infrastructure will be added in future sprints.
+### Running Tests
+
+```bash
+# Unit tests
+npm run test
+
+# Unit tests in watch mode
+npm run test:watch
+
+# Test coverage
+npm run test:cov
+
+# E2E tests
+npm run test:e2e
+
+# Debug tests
+npm run test:debug
+```
+
+### Test Structure
+
+```
+src/
+├── modules/
+│   └── auth/
+│       ├── auth.service.ts
+│       ├── auth.service.spec.ts    # Unit tests
+│       └── auth.controller.ts
+test/
+├── jest-e2e.json                    # E2E test configuration
+└── auth.e2e-spec.ts                 # E2E tests
+```
+
+### Writing Tests
+
+#### Unit Tests
+
+Unit tests are located alongside the source files with `.spec.ts` extension:
+
+```typescript
+import { Test, TestingModule } from '@nestjs/testing';
+import { AuthService } from './auth.service';
+
+describe('AuthService', () => {
+  let service: AuthService;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [AuthService],
+    }).compile();
+
+    service = module.get<AuthService>(AuthService);
+  });
+
+  it('should be defined', () => {
+    expect(service).toBeDefined();
+  });
+});
+```
+
+#### E2E Tests
+
+E2E tests are located in the `test/` directory:
+
+```typescript
+import { Test, TestingModule } from '@nestjs/testing';
+import { INestApplication } from '@nestjs/common';
+import * as request from 'supertest';
+import { AppModule } from '../src/app.module';
+
+describe('AppController (e2e)', () => {
+  let app: INestApplication;
+
+  beforeEach(async () => {
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [AppModule],
+    }).compile();
+
+    app = moduleFixture.createNestApplication();
+    await app.init();
+  });
+
+  it('/health (GET)', () => {
+    return request(app.getHttpServer())
+      .get('/health')
+      .expect(200);
+  });
+});
+```
+
+### Test Coverage
+
+Run `npm run test:cov` to generate a coverage report in the `coverage/` directory.
+
+### Installing Test Dependencies
+
+```bash
+npm install --save-dev @nestjs/testing jest ts-jest @types/jest supertest @types/supertest
+```
 
 ## Debugging
 

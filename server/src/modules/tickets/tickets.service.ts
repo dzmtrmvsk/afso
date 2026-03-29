@@ -9,35 +9,7 @@ import { EventsGateway } from '../notifications/events.gateway';
 import { InjectQueue } from '@nestjs/bull';
 import type { Queue } from 'bull';
 import { Escalation, EscalationLevel, EscalationStatus } from '../sla/entities/escalation.entity';
-
-import { IsOptional, IsEnum, IsString, IsInt, Min } from 'class-validator';
-import { Type } from 'class-transformer';
-
-export class TicketFilters {
-  @IsOptional()
-  @IsEnum(TicketStatus)
-  status?: TicketStatus;
-
-  @IsOptional()
-  @IsEnum(TicketPriority)
-  priority?: TicketPriority;
-
-  @IsOptional()
-  @IsString()
-  assignedTo?: string;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  page?: number = 1;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  limit?: number = 20;
-}
+import { TicketFilters } from './dto/ticket-filters.dto';
 
 @Injectable()
 export class TicketsService {
@@ -98,7 +70,7 @@ export class TicketsService {
     return savedTicket;
   }
 
-  async findAll(organizationId: string, filters: TicketFilters): Promise<Ticket[]> {
+  async findAll(organizationId: string, filters: TicketFilters): Promise<{ data: Ticket[]; total: number; page: number; limit: number; totalPages: number }> {
     const { status, priority, page = 1, limit = 20 } = filters;
     const query = this.ticketRepository.createQueryBuilder('ticket')
       .where('ticket.organizationId = :organizationId', { organizationId });
@@ -111,11 +83,19 @@ export class TicketsService {
       query.andWhere('ticket.priority = :priority', { priority });
     }
 
-    return query
+    const [data, total] = await query
       .orderBy('ticket.createdAt', 'DESC')
       .skip((page - 1) * limit)
       .take(limit)
-      .getMany();
+      .getManyAndCount();
+
+    return {
+      data,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 
   async findOne(id: string, organizationId: string): Promise<Ticket> {
@@ -169,6 +149,33 @@ export class TicketsService {
     return updatedTicket;
   }
 
+  private async markAsBreached(ticket: Ticket): Promise<Ticket> {
+    ticket.slaBreached = true;
+    return this.ticketRepository.save(ticket);
+  }
+
+  private async createEscalation(ticket: Ticket, organizationId: string): Promise<void> {
+    const escalationRepository = this.ticketRepository.manager.getRepository(Escalation);
+    const escalation = escalationRepository.create({
+      ticketId: ticket.id,
+      organizationId,
+      level: EscalationLevel.LEVEL_1,
+      status: EscalationStatus.PENDING,
+      reason: 'SLA response time exceeded',
+      escalatedAt: new Date(),
+    });
+    await escalationRepository.save(escalation);
+  }
+
+  private notifyManagers(ticket: Ticket, managerIds: string[]): void {
+    for (const managerId of managerIds) {
+      this.eventsGateway.emitToUser(managerId, 'ticket.escalated', {
+        ticketId: ticket.id,
+        reason: 'SLA breach escalation',
+      });
+    }
+  }
+
   async handleSlaBreach(id: string, organizationId: string): Promise<Ticket> {
     const ticket = await this.ticketRepository.findOne({
       where: { id, organizationId },
@@ -183,34 +190,16 @@ export class TicketsService {
       return ticket;
     }
 
-    ticket.slaBreached = true;
-    const savedTicket = await this.ticketRepository.save(ticket);
+    const savedTicket = await this.markAsBreached(ticket);
 
-    // Create escalation record if policy has rules
-    if (ticket.slaPolicy && ticket.slaPolicy.escalateOnBreach) {
-      const escalationRepository = this.ticketRepository.manager.getRepository(Escalation);
-      const escalation = escalationRepository.create({
-        ticketId: ticket.id,
-        organizationId,
-        level: EscalationLevel.LEVEL_1,
-        status: EscalationStatus.PENDING,
-        reason: 'SLA response time exceeded',
-        escalatedAt: new Date(),
-      });
-      await escalationRepository.save(escalation);
+    if (ticket.slaPolicy?.escalateOnBreach) {
+      await this.createEscalation(ticket, organizationId);
       
-      // Notify managers if specified in policy
       if (ticket.slaPolicy.escalationRules?.notifyUserIds) {
-        for (const managerId of ticket.slaPolicy.escalationRules.notifyUserIds) {
-          this.eventsGateway.emitToUser(managerId, 'ticket.escalated', {
-            ticketId: ticket.id,
-            reason: 'SLA breach escalation',
-          });
-        }
+        this.notifyManagers(ticket, ticket.slaPolicy.escalationRules.notifyUserIds);
       }
     }
 
-    // Log event
     await this.auditService.logEvent({
       eventType: 'sla.breached',
       entityType: 'ticket',
@@ -219,7 +208,6 @@ export class TicketsService {
       data: { after: savedTicket },
     });
 
-    // Notify WebSocket
     this.eventsGateway.emitToOrganization(organizationId, 'sla.breached', savedTicket);
 
     return savedTicket;

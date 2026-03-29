@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, ManyToMany, JoinTable, OneToMany } from 'typeorm';
-import { Organization } from '../../organizations/entities/organization.entity';
 import { Permission } from './permission.entity';
 import { RoleAssignment } from './role-assignment.entity';
+import { Organization } from '../../modules/organizations/entities/organization.entity';
 
 @Entity('roles')
 export class Role {

@@ -4,9 +4,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { BullModule } from '@nestjs/bull';
 import { ScheduleModule } from '@nestjs/schedule';
 import { MongooseModule } from '@nestjs/mongoose';
+import { CacheModule } from '@nestjs/cache-manager';
 import { AppDataSource } from './config/data-source';
 import { queueConfig } from './config/queue.config';
+import { cacheConfig } from './config/cache.config';
 import { HealthController } from './health/health.controller';
+import { CommonModule } from './common/common.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
@@ -26,14 +29,19 @@ import { ServiceTypesModule } from './modules/service-types/service-types.module
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '../env',
+      envFilePath: '.env',
     }),
     TypeOrmModule.forRoot({
       ...AppDataSource.options,
     }),
     MongooseModule.forRoot(process.env.MONGODB_URI || 'mongodb://localhost:27017/afso'),
     BullModule.forRoot(queueConfig()),
+    CacheModule.registerAsync({
+      isGlobal: true,
+      useFactory: cacheConfig,
+    }),
     ScheduleModule.forRoot(),
+    CommonModule,
     AuthModule,
     UsersModule,
     OrganizationsModule,

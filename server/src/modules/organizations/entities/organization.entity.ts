@@ -2,18 +2,18 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateCol
 import { User } from '../../users/entities/user.entity';
 import { Team } from '../../teams/entities/team.entity';
 import { Ticket } from '../../tickets/entities/ticket.entity';
-import { Invoice } from '../../invoices/entities/invoice.entity';
+import { Invoice } from '../../../shared/entities/invoice.entity';
 import { Notification } from '../../notifications/entities/notification.entity';
 import { Location } from '../../locations/entities/location.entity';
-import { SkillCategory } from '../../skills/entities/skill-category.entity';
-import { Integration } from '../../integrations/entities/integration.entity';
+import { SkillCategory } from '../../../shared/entities/skill-category.entity';
+import { Integration } from '../../../shared/entities/integration.entity';
 import { Queue } from '../../queues/entities/queue.entity';
 import { Subscription } from '../../subscriptions/entities/subscription.entity';
-import { Role } from '../../permissions/entities/role.entity';
+import { Role } from '../../../shared/entities/role.entity';
 import { AuditLog } from '../../audit/entities/audit-log.entity';
 import { Metric } from '../../analytics/entities/metric.entity';
-import { Report } from '../../reports/entities/report.entity';
-import { Webhook } from '../../webhooks/entities/webhook.entity';
+import { Report } from '../../../shared/entities/report.entity';
+import { Webhook } from '../../../shared/entities/webhook.entity';
 import { ServiceType } from 'src/modules/service-types/entities/service-type.entity';
 import { Customer } from 'src/modules/customers/entities/customer.entity';
 

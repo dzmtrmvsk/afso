@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne } from 'typeorm';
-import { User } from '../../users/entities/user.entity';
 import { Role } from './role.entity';
-import { Organization } from '../../organizations/entities/organization.entity';
+import { Organization } from '../../modules/organizations/entities/organization.entity';
+import { User } from '../../modules/users/entities/user.entity';
 
 @Entity('role_assignments')
 export class RoleAssignment {

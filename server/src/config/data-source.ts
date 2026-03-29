@@ -13,9 +13,12 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USERNAME || 'postgres',
   password: process.env.DB_PASSWORD || 'postgres',
   database: process.env.DB_NAME || 'afso_dev',
-  entities: [join(__dirname, '../modules/**/*.entity{.ts,.js}')],
+  entities: [
+    join(__dirname, '../modules/**/*.entity{.ts,.js}'),
+    join(__dirname, '../shared/entities/*.entity{.ts,.js}'),
+  ],
   migrations: [join(__dirname, './migrations/*{.ts,.js}')],
   migrationsTableName: 'typeorm_migrations',
-  synchronize: true,
+  synchronize: false,
   logging: !isProduction ? ['query', 'error', 'migration'] : ['error'],
 });
