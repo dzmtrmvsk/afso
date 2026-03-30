@@ -22,6 +22,22 @@ export const ticketsApi = {
     return client.patch<Ticket>(`/tickets/${id}/status`, { status });
   },
 
+  getMyTasks() {
+    return client.get<Ticket[]>('/tickets/my');
+  },
+
+  startWork(id: string) {
+    return client.post<Ticket>(`/tickets/${id}/start`);
+  },
+
+  pauseWork(id: string) {
+    return client.post<Ticket>(`/tickets/${id}/pause`);
+  },
+
+  completeWork(id: string) {
+    return client.post<Ticket>(`/tickets/${id}/complete`);
+  },
+
   remove(id: string) {
     return client.delete(`/tickets/${id}`);
   },

@@ -40,6 +40,14 @@ export class UsersService {
   async findAllByOrganization(organizationId: string): Promise<User[]> {
     return this.userRepository.find({
       where: { organizationId },
+      relations: ['organization'],
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  async findAllGlobal(): Promise<User[]> {
+    return this.userRepository.find({
+      relations: ['organization'],
       order: { createdAt: 'DESC' },
     });
   }

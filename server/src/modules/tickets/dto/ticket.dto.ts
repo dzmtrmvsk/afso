@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsEnum, IsOptional, IsArray, IsObject, IsInt, Min } from 'class-validator';
+import { IsNotEmpty, IsString, IsEnum, IsOptional, IsInt, Min } from 'class-validator';
 import { TicketPriority } from '../entities/ticket.entity';
 
 export class CreateTicketDto {
@@ -15,26 +15,24 @@ export class CreateTicketDto {
   priority?: TicketPriority;
 
   @IsOptional()
-  @IsObject()
-  location?: {
-    address: string;
-    latitude: number;
-    longitude: number;
-  };
+  @IsString()
+  contactName?: string;
 
   @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  requiredSkills?: string[];
+  @IsString()
+  contactPhone?: string;
 
   @IsOptional()
-  @IsObject()
-  customFields?: Record<string, unknown>;
+  @IsString()
+  address?: string;
 
   @IsOptional()
-  @IsInt()
-  @Min(0)
-  estimatedDurationMinutes?: number;
+  @IsString()
+  customerName?: string;
+
+  @IsOptional()
+  @IsString()
+  customerEmail?: string;
 
   @IsOptional()
   @IsString()
@@ -42,7 +40,24 @@ export class CreateTicketDto {
 
   @IsOptional()
   @IsString()
+  serviceTypeName?: string;
+
+  @IsOptional()
+  @IsString()
   serviceTypeId?: string;
+
+  @IsOptional()
+  @IsString()
+  teamId?: string;
+
+  @IsOptional()
+  @IsString()
+  slaPolicyId?: string;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  estimatedDurationMinutes?: number;
 }
 
 export class UpdateTicketDto {
@@ -59,13 +74,12 @@ export class UpdateTicketDto {
   priority?: TicketPriority;
 
   @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  requiredSkills?: string[];
+  @IsString()
+  teamId?: string;
 
   @IsOptional()
-  @IsObject()
-  customFields?: Record<string, unknown>;
+  @IsString()
+  slaPolicyId?: string;
 }
 
 export class UpdateTicketStatusDto {

@@ -27,6 +27,12 @@ export class OrganizationsService {
     return this.organizationRepository.save(organization);
   }
 
+  async findAll(): Promise<Organization[]> {
+    return this.organizationRepository.find({
+      order: { createdAt: 'DESC' },
+    });
+  }
+
   async findOne(id: string): Promise<Organization> {
     const organization = await this.organizationRepository.findOne({ where: { id } });
     if (!organization) {

@@ -10,8 +10,8 @@ export const usersApi = {
     return client.get<User>(`/users/${id}`);
   },
 
-  create(data: { email: string; password: string; firstName: string; lastName: string; role: string }) {
-    return client.post<User>('/users', data);
+  create(data: { email: string; firstName: string; lastName: string; position?: string; teamId?: string }) {
+    return client.post<User & { generatedPassword: string }>('/users', data);
   },
 
   updateLoad(id: string, delta: number) {

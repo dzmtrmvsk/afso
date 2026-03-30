@@ -4,9 +4,8 @@ import { Assignment } from '../../assignments/entities/assignment.entity';
 import { Notification } from '../../notifications/entities/notification.entity';
 
 export enum UserRole {
-  ADMIN = 'admin',
+  SUPER_ADMIN = 'super_admin',
   MANAGER = 'manager',
-  DISPATCHER = 'dispatcher',
   AGENT = 'agent',
 }
 
@@ -42,11 +41,14 @@ export class User {
   @Column({ nullable: true })
   phone: string;
 
-  @ManyToOne(() => Organization, (organization) => organization.users)
+  @ManyToOne(() => Organization, (organization) => organization.users, { nullable: true })
   organization: Organization;
 
-  @Column()
+  @Column({ nullable: true })
   organizationId: string;
+
+  @Column({ nullable: true })
+  position: string;
 
   @OneToMany(() => Assignment, (assignment) => assignment.agent)
   assignments: Assignment[];

@@ -2,9 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { ticketsApi } from '@/api/tickets';
-import { customersApi } from '@/api/customers';
-import { locationsApi } from '@/api/locations';
-import { serviceTypesApi } from '@/api/service-types';
+import { teamsApi } from '@/api/teams';
 import { slaApi } from '@/api/sla';
 import { Header } from '@/components/layout/Header';
 import { Button } from '@/components/ui/Button';
@@ -12,36 +10,38 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Card } from '@/components/ui/Card';
 import { priorityOptions } from '@/lib/ticket-helpers';
-import type { Customer, Location, ServiceType, SlaPolicy } from '@/types';
+import type { Team, SlaPolicy } from '@/types';
 
 export function CreateTicketPage() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [locations, setLocations] = useState<Location[]>([]);
-  const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
+  const [teams, setTeams] = useState<Team[]>([]);
   const [slaPolicies, setSlaPolicies] = useState<SlaPolicy[]>([]);
+  const [isNewCustomer, setIsNewCustomer] = useState(false);
+  const [isNewServiceType, setIsNewServiceType] = useState(false);
   const [form, setForm] = useState({
     title: '',
     description: '',
     priority: 'medium',
     customerId: '',
-    locationId: '',
+    customerName: '',
+    customerEmail: '',
     serviceTypeId: '',
+    serviceTypeName: '',
+    teamId: '',
     slaPolicyId: '',
-    estimatedDurationMinutes: 0,
+    estimatedDurationMinutes: 60,
+    contactName: '',
+    contactPhone: '',
+    address: '',
   });
 
   useEffect(() => {
     Promise.all([
-      customersApi.getAll().catch(() => ({ data: [] })),
-      locationsApi.getAll().catch(() => ({ data: [] })),
-      serviceTypesApi.getAll().catch(() => ({ data: [] })),
+      teamsApi.getAll().catch(() => ({ data: [] })),
       slaApi.getAll().catch(() => ({ data: [] })),
-    ]).then(([c, l, st, sla]) => {
-      setCustomers(Array.isArray(c.data) ? c.data : []);
-      setLocations(Array.isArray(l.data) ? l.data : []);
-      setServiceTypes(Array.isArray(st.data) ? st.data : []);
+    ]).then(([t, sla]) => {
+      setTeams(Array.isArray(t.data) ? t.data : []);
       setSlaPolicies(Array.isArray(sla.data) ? sla.data : []);
     });
   }, []);
@@ -51,13 +51,22 @@ export function CreateTicketPage() {
     setIsLoading(true);
     try {
       const payload = {
-        ...form,
-        customerId: form.customerId || undefined,
-        locationId: form.locationId || undefined,
-        serviceTypeId: form.serviceTypeId || undefined,
+        title: form.title,
+        description: form.description,
+        priority: form.priority as 'low' | 'medium' | 'high' | 'urgent',
+        customerId: isNewCustomer ? undefined : (form.customerId || undefined),
+        customerName: isNewCustomer ? form.customerName : undefined,
+        customerEmail: isNewCustomer ? form.customerEmail : undefined,
+        serviceTypeId: isNewServiceType ? undefined : (form.serviceTypeId || undefined),
+        serviceTypeName: isNewServiceType ? form.serviceTypeName : undefined,
+        teamId: form.teamId || undefined,
         slaPolicyId: form.slaPolicyId || undefined,
+        estimatedDurationMinutes: form.estimatedDurationMinutes,
+        contactName: form.contactName || undefined,
+        contactPhone: form.contactPhone || undefined,
+        address: form.address || undefined,
       };
-      await ticketsApi.create(payload as Parameters<typeof ticketsApi.create>[0]);
+      await ticketsApi.create(payload);
       navigate('/tickets');
     } catch (err) {
       console.error(err);
@@ -80,74 +89,95 @@ export function CreateTicketPage() {
         </Link>
       </div>
 
-      <Header title="Create Ticket" />
+      <Header title="Create Ticket" description="Fill in all details. Customer and service type will be created automatically if new." />
 
-      <Card className="max-w-2xl">
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Input label="Title" name="title" value={form.title} onChange={handleChange} required />
-
-          <div className="space-y-1">
-            <label className="block text-sm font-medium text-gray-700">Description</label>
-            <textarea
-              name="description"
-              value={form.description}
-              onChange={handleChange}
-              rows={4}
-              required
-              className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm placeholder:text-gray-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-            />
+      <Card className="max-w-3xl">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">Basic Info</h3>
+            <Input label="Title" name="title" value={form.title} onChange={handleChange} required />
+            <div className="space-y-1">
+              <label className="block text-sm font-medium text-gray-700">Description</label>
+              <textarea
+                name="description"
+                value={form.description}
+                onChange={handleChange}
+                rows={4}
+                required
+                className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm placeholder:text-gray-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <Select label="Priority" name="priority" options={priorityOptions} value={form.priority} onChange={handleChange} />
+              <Input label="Estimated Duration (min)" name="estimatedDurationMinutes" type="number" value={String(form.estimatedDurationMinutes)} onChange={handleChange} />
+            </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <Select label="Priority" name="priority" options={priorityOptions} value={form.priority} onChange={handleChange} />
-            <Input
-              label="Estimated Duration (min)"
-              name="estimatedDurationMinutes"
-              type="number"
-              value={String(form.estimatedDurationMinutes)}
-              onChange={handleChange}
-            />
+          <div className="space-y-4 border-t pt-6">
+            <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">Customer</h3>
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="newCustomer"
+                checked={isNewCustomer}
+                onChange={(e) => setIsNewCustomer(e.target.checked)}
+                className="rounded border-gray-300"
+              />
+              <label htmlFor="newCustomer" className="text-sm text-gray-700">New customer</label>
+            </div>
+            {isNewCustomer ? (
+              <>
+                <Input label="Customer Name" name="customerName" value={form.customerName} onChange={handleChange} placeholder="e.g. John Smith" required={isNewCustomer} />
+                <Input label="Customer Email" name="customerEmail" type="email" value={form.customerEmail} onChange={handleChange} placeholder="customer@example.com" required={isNewCustomer} />
+              </>
+            ) : (
+              <Input label="Customer ID (optional)" name="customerId" value={form.customerId} onChange={handleChange} placeholder="Existing customer ID if known" />
+            )}
+            <div className="grid grid-cols-2 gap-4">
+              <Input label="Contact Name" name="contactName" value={form.contactName} onChange={handleChange} placeholder="Person to contact on site" />
+              <Input label="Contact Phone" name="contactPhone" value={form.contactPhone} onChange={handleChange} placeholder="Phone number" />
+            </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-4 border-t pt-6">
+            <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">Service & Assignment</h3>
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="newServiceType"
+                checked={isNewServiceType}
+                onChange={(e) => setIsNewServiceType(e.target.checked)}
+                className="rounded border-gray-300"
+              />
+              <label htmlFor="newServiceType" className="text-sm text-gray-700">New service type</label>
+            </div>
+            {isNewServiceType ? (
+              <Input label="Service Type Name" name="serviceTypeName" value={form.serviceTypeName} onChange={handleChange} placeholder="e.g. Phone Repair" required={isNewServiceType} />
+            ) : (
+              <Input label="Service Type ID (optional)" name="serviceTypeId" value={form.serviceTypeId} onChange={handleChange} placeholder="Existing service type ID" />
+            )}
             <Select
-              label="Customer"
-              name="customerId"
-              options={customers.map((c) => ({ value: c.id, label: c.name }))}
-              placeholder="Select customer"
-              value={form.customerId}
+              label="Assign to Team"
+              name="teamId"
+              options={[{ value: '', label: '— Auto assign —' }, ...teams.map((t) => ({ value: t.id, label: t.name }))]}
+              value={form.teamId}
               onChange={handleChange}
             />
             <Select
-              label="Location"
-              name="locationId"
-              options={locations.map((l) => ({ value: l.id, label: l.name }))}
-              placeholder="Select location"
-              value={form.locationId}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <Select
-              label="Service Type"
-              name="serviceTypeId"
-              options={serviceTypes.map((s) => ({ value: s.id, label: s.name }))}
-              placeholder="Select service type"
-              value={form.serviceTypeId}
-              onChange={handleChange}
-            />
-            <Select
-              label="SLA Policy"
+              label="SLA Policy (optional)"
               name="slaPolicyId"
-              options={slaPolicies.map((s) => ({ value: s.id, label: s.name }))}
-              placeholder="Select SLA policy"
+              options={[{ value: '', label: '— Default —' }, ...slaPolicies.map((s) => ({ value: s.id, label: s.name }))]}
               value={form.slaPolicyId}
               onChange={handleChange}
             />
           </div>
 
-          <div className="flex justify-end gap-3 pt-4">
+          <div className="space-y-4 border-t pt-6">
+            <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">Location</h3>
+            <Input label="Address" name="address" value={form.address} onChange={handleChange} placeholder="Full address where service is needed" />
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4 border-t">
             <Link to="/tickets">
               <Button variant="outline" type="button">Cancel</Button>
             </Link>

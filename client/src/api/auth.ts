@@ -11,7 +11,7 @@ export const authApi = {
     password: string;
     firstName: string;
     lastName: string;
-    organizationName: string;
+    registrationKey: string;
   }) {
     return client.post<AuthResponse>('/auth/register', data);
   },

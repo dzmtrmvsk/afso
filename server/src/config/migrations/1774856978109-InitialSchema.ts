@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class InitialSchema1774819681025 implements MigrationInterface {
-    name = 'InitialSchema1774819681025'
+export class InitialSchema1774856978109 implements MigrationInterface {
+    name = 'InitialSchema1774856978109'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`CREATE TYPE "public"."sla_policies_priority_enum" AS ENUM('low', 'medium', 'high', 'urgent')`);
@@ -18,17 +18,17 @@ export class InitialSchema1774819681025 implements MigrationInterface {
         await queryRunner.query(`CREATE TYPE "public"."customers_status_enum" AS ENUM('active', 'inactive', 'blocked', 'suspended')`);
         await queryRunner.query(`CREATE TABLE "customers" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "name" character varying NOT NULL, "email" character varying NOT NULL, "phone" character varying, "description" text, "organizationId" uuid NOT NULL, "status" "public"."customers_status_enum" NOT NULL DEFAULT 'active', "address" character varying, "city" character varying, "country" character varying, "customFields" jsonb, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "UQ_8536b8b85c06969f84f0c098b03" UNIQUE ("email"), CONSTRAINT "PK_133ec679a801fab5e070f73d3ea" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "service_types" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "name" character varying NOT NULL, "description" text, "organizationId" uuid NOT NULL, "estimatedDurationMinutes" integer NOT NULL DEFAULT '0', "baseCost" numeric(10,2), "requiredSkills" jsonb, "isActive" boolean NOT NULL DEFAULT true, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "PK_1dc93417a097cdee3491f39d7cc" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "teams" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "name" character varying NOT NULL, "description" text, "organizationId" uuid NOT NULL, "skills" jsonb, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "PK_7e5523774a38b08a6236d322403" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TYPE "public"."tickets_priority_enum" AS ENUM('low', 'medium', 'high', 'urgent')`);
         await queryRunner.query(`CREATE TYPE "public"."tickets_status_enum" AS ENUM('pending', 'in_queue', 'assigned', 'in_progress', 'on_hold', 'resolved', 'closed')`);
-        await queryRunner.query(`CREATE TABLE "tickets" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "title" character varying NOT NULL, "description" text NOT NULL, "priority" "public"."tickets_priority_enum" NOT NULL DEFAULT 'medium', "status" "public"."tickets_status_enum" NOT NULL DEFAULT 'pending', "organizationId" uuid NOT NULL, "createdById" uuid, "slaPolicyId" uuid, "slaDeadline" TIMESTAMP, "slaBreached" boolean NOT NULL DEFAULT false, "locationId" uuid, "customerId" uuid, "serviceTypeId" uuid, "customFields" jsonb, "requiredSkills" jsonb, "estimatedDurationMinutes" integer NOT NULL DEFAULT '0', "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "resolvedAt" TIMESTAMP, "closedAt" TIMESTAMP, CONSTRAINT "PK_343bc942ae261cf7a1377f48fd0" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "tickets" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "title" character varying NOT NULL, "description" text NOT NULL, "priority" "public"."tickets_priority_enum" NOT NULL DEFAULT 'medium', "status" "public"."tickets_status_enum" NOT NULL DEFAULT 'pending', "organizationId" uuid NOT NULL, "createdById" uuid, "slaPolicyId" uuid, "slaDeadline" TIMESTAMP, "slaBreached" boolean NOT NULL DEFAULT false, "locationId" uuid, "customerId" uuid, "serviceTypeId" uuid, "customFields" jsonb, "requiredSkills" jsonb, "estimatedDurationMinutes" integer NOT NULL DEFAULT '0', "teamId" uuid, "contactName" character varying, "contactPhone" character varying, "address" character varying, "startedAt" TIMESTAMP, "pausedAt" TIMESTAMP, "totalWorkTimeMs" integer NOT NULL DEFAULT '0', "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "resolvedAt" TIMESTAMP, "closedAt" TIMESTAMP, CONSTRAINT "PK_343bc942ae261cf7a1377f48fd0" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TYPE "public"."assignments_status_enum" AS ENUM('pending', 'accepted', 'declined', 'in_progress', 'completed')`);
         await queryRunner.query(`CREATE TABLE "assignments" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "ticketId" uuid NOT NULL, "agentId" uuid NOT NULL, "status" "public"."assignments_status_enum" NOT NULL DEFAULT 'pending', "isAutoAssigned" boolean NOT NULL DEFAULT false, "notes" text, "acceptedAt" TIMESTAMP, "startedAt" TIMESTAMP, "completedAt" TIMESTAMP, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "REL_cc9ed03c1ca2d53774480c0468" UNIQUE ("ticketId"), CONSTRAINT "PK_c54ca359535e0012b04dcbd80ee" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TYPE "public"."notifications_type_enum" AS ENUM('assignment', 'sla_warning', 'sla_breach', 'escalation', 'comment', 'status_change', 'system')`);
         await queryRunner.query(`CREATE TABLE "notifications" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "recipientId" uuid NOT NULL, "organizationId" uuid NOT NULL, "type" "public"."notifications_type_enum" NOT NULL, "channels" text NOT NULL, "title" character varying NOT NULL, "message" text NOT NULL, "metadata" jsonb, "isRead" boolean NOT NULL DEFAULT false, "readAt" TIMESTAMP, "relatedEntityId" uuid, "relatedEntityType" character varying, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "PK_6a72c3c0f683f6462415e653c3a" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE TYPE "public"."users_role_enum" AS ENUM('admin', 'manager', 'dispatcher', 'agent')`);
+        await queryRunner.query(`CREATE TYPE "public"."users_role_enum" AS ENUM('super_admin', 'manager', 'agent')`);
         await queryRunner.query(`CREATE TYPE "public"."users_status_enum" AS ENUM('active', 'inactive', 'suspended')`);
-        await queryRunner.query(`CREATE TABLE "users" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "email" character varying NOT NULL, "password" character varying NOT NULL, "firstName" character varying NOT NULL, "lastName" character varying NOT NULL, "role" "public"."users_role_enum" NOT NULL, "status" "public"."users_status_enum" NOT NULL DEFAULT 'active', "phone" character varying, "organizationId" uuid NOT NULL, "skills" jsonb, "currentLoad" integer NOT NULL DEFAULT '0', "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "UQ_97672ac88f789774dd47f7c8be3" UNIQUE ("email"), CONSTRAINT "PK_a3ffb1c0c8416b9fc6f907b7433" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE TABLE "teams" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "name" character varying NOT NULL, "description" text, "organizationId" uuid NOT NULL, "skills" jsonb, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "PK_7e5523774a38b08a6236d322403" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "users" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "email" character varying NOT NULL, "password" character varying NOT NULL, "firstName" character varying NOT NULL, "lastName" character varying NOT NULL, "role" "public"."users_role_enum" NOT NULL, "status" "public"."users_status_enum" NOT NULL DEFAULT 'active', "phone" character varying, "organizationId" uuid, "position" character varying, "skills" jsonb, "currentLoad" integer NOT NULL DEFAULT '0', "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "UQ_97672ac88f789774dd47f7c8be3" UNIQUE ("email"), CONSTRAINT "PK_a3ffb1c0c8416b9fc6f907b7433" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TYPE "public"."invoices_status_enum" AS ENUM('draft', 'sent', 'paid', 'overdue', 'cancelled')`);
         await queryRunner.query(`CREATE TABLE "invoices" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "invoiceNumber" character varying NOT NULL, "organizationId" uuid NOT NULL, "amount" numeric(12,2) NOT NULL, "paidAmount" numeric(12,2) NOT NULL DEFAULT '0', "status" "public"."invoices_status_enum" NOT NULL DEFAULT 'draft', "issueDate" date NOT NULL, "dueDate" date NOT NULL, "paidDate" date, "description" text, "lineItems" jsonb, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "UQ_bf8e0f9dd4558ef209ec111782d" UNIQUE ("invoiceNumber"), CONSTRAINT "PK_668cef7c22a427fd822cc1be3ce" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "skills" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "name" character varying NOT NULL, "description" text, "categoryId" uuid NOT NULL, "organizationId" uuid NOT NULL, "proficiencyLevel" integer NOT NULL DEFAULT '1', "isActive" boolean NOT NULL DEFAULT true, "metadata" jsonb, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "PK_0d3212120f4ecedf90864d7e298" PRIMARY KEY ("id"))`);
@@ -60,6 +60,7 @@ export class InitialSchema1774819681025 implements MigrationInterface {
         await queryRunner.query(`CREATE TYPE "public"."webhook_events_status_enum" AS ENUM('pending', 'delivered', 'failed', 'retrying')`);
         await queryRunner.query(`CREATE TABLE "webhook_events" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "webhookId" uuid NOT NULL, "eventType" character varying NOT NULL, "payload" jsonb NOT NULL, "status" "public"."webhook_events_status_enum" NOT NULL DEFAULT 'pending', "attemptCount" integer NOT NULL DEFAULT '0', "httpStatusCode" integer, "responseBody" text, "deliveredAt" TIMESTAMP, "nextRetryAt" TIMESTAMP, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "PK_4cba37e6a0acb5e1fc49c34ebfd" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "webhooks" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "name" character varying NOT NULL, "organizationId" uuid NOT NULL, "url" character varying NOT NULL, "events" text NOT NULL, "headers" jsonb, "metadata" jsonb, "isActive" boolean NOT NULL DEFAULT true, "failureCount" integer NOT NULL DEFAULT '0', "lastDeliveredAt" TIMESTAMP, "lastFailedAt" TIMESTAMP, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "PK_9e8795cfc899ab7bdaa831e8527" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "registration_keys" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "key" character varying NOT NULL, "organizationName" character varying NOT NULL, "organizationId" uuid, "used" boolean NOT NULL DEFAULT false, "usedByEmail" character varying, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "UQ_b68ca1c84de373f879068da71ca" UNIQUE ("key"), CONSTRAINT "PK_a7e31b3d66b013c65d24b73a831" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "team_members" ("team_id" uuid NOT NULL, "user_id" uuid NOT NULL, CONSTRAINT "PK_1d3c06a8217a8785e2af0ec4ab8" PRIMARY KEY ("team_id", "user_id"))`);
         await queryRunner.query(`CREATE INDEX "IDX_fdad7d5768277e60c40e01cdce" ON "team_members" ("team_id") `);
         await queryRunner.query(`CREATE INDEX "IDX_c2bf4967c8c2a6b845dadfbf3d" ON "team_members" ("user_id") `);
@@ -79,18 +80,19 @@ export class InitialSchema1774819681025 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "locations" ADD CONSTRAINT "FK_6ccf3c1c271638b4782216853a9" FOREIGN KEY ("organizationId") REFERENCES "organizations"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "customers" ADD CONSTRAINT "FK_fac3145c49520eae6248715b26b" FOREIGN KEY ("organizationId") REFERENCES "organizations"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "service_types" ADD CONSTRAINT "FK_25b5807d12d1ea10f549613b10b" FOREIGN KEY ("organizationId") REFERENCES "organizations"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "teams" ADD CONSTRAINT "FK_858389ddeb0bd6c6bf4e323f91e" FOREIGN KEY ("organizationId") REFERENCES "organizations"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "tickets" ADD CONSTRAINT "FK_98f00985a13412ab11f4d1c1000" FOREIGN KEY ("organizationId") REFERENCES "organizations"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "tickets" ADD CONSTRAINT "FK_41de538b3eed286f53dd678b030" FOREIGN KEY ("createdById") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "tickets" ADD CONSTRAINT "FK_92956078210b77b3704fc5befc4" FOREIGN KEY ("slaPolicyId") REFERENCES "sla_policies"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "tickets" ADD CONSTRAINT "FK_7abac3d1c71638288916909d357" FOREIGN KEY ("locationId") REFERENCES "locations"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "tickets" ADD CONSTRAINT "FK_7a1f978a1c1a6b2b1133014b4b2" FOREIGN KEY ("customerId") REFERENCES "customers"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "tickets" ADD CONSTRAINT "FK_46ba2e4e917962b6211cd78f25c" FOREIGN KEY ("serviceTypeId") REFERENCES "service_types"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "tickets" ADD CONSTRAINT "FK_abf92dbbc698fa3b7118e94d8cf" FOREIGN KEY ("teamId") REFERENCES "teams"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "assignments" ADD CONSTRAINT "FK_cc9ed03c1ca2d53774480c04683" FOREIGN KEY ("ticketId") REFERENCES "tickets"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "assignments" ADD CONSTRAINT "FK_29d76e75c370b79104de29560c7" FOREIGN KEY ("agentId") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "notifications" ADD CONSTRAINT "FK_db873ba9a123711a4bff527ccd5" FOREIGN KEY ("recipientId") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "notifications" ADD CONSTRAINT "FK_928914a0743f50e6f83a90cdda9" FOREIGN KEY ("organizationId") REFERENCES "organizations"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "users" ADD CONSTRAINT "FK_f3d6aea8fcca58182b2e80ce979" FOREIGN KEY ("organizationId") REFERENCES "organizations"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "teams" ADD CONSTRAINT "FK_858389ddeb0bd6c6bf4e323f91e" FOREIGN KEY ("organizationId") REFERENCES "organizations"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "invoices" ADD CONSTRAINT "FK_4237f4b816fec1df81bd85f833f" FOREIGN KEY ("organizationId") REFERENCES "organizations"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "skills" ADD CONSTRAINT "FK_06d267f85858229c10a01a08ad7" FOREIGN KEY ("categoryId") REFERENCES "skill_categories"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "skills" ADD CONSTRAINT "FK_c8e84d8dab61c6ab97f9366df8a" FOREIGN KEY ("organizationId") REFERENCES "organizations"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
@@ -112,6 +114,7 @@ export class InitialSchema1774819681025 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "reports" ADD CONSTRAINT "FK_fddee96a7e01bddcc3e5eb610bf" FOREIGN KEY ("createdById") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "webhook_events" ADD CONSTRAINT "FK_7c857d21e12e81fd6ce8585d057" FOREIGN KEY ("webhookId") REFERENCES "webhooks"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "webhooks" ADD CONSTRAINT "FK_dbecd97048eef1ff16f24a01313" FOREIGN KEY ("organizationId") REFERENCES "organizations"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "registration_keys" ADD CONSTRAINT "FK_3bd1baf905c78e5b8b787246c5a" FOREIGN KEY ("organizationId") REFERENCES "organizations"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "team_members" ADD CONSTRAINT "FK_fdad7d5768277e60c40e01cdcea" FOREIGN KEY ("team_id") REFERENCES "teams"("id") ON DELETE CASCADE ON UPDATE CASCADE`);
         await queryRunner.query(`ALTER TABLE "team_members" ADD CONSTRAINT "FK_c2bf4967c8c2a6b845dadfbf3d4" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE`);
         await queryRunner.query(`ALTER TABLE "role_permissions" ADD CONSTRAINT "FK_178199805b901ccd220ab7740ec" FOREIGN KEY ("role_id") REFERENCES "roles"("id") ON DELETE CASCADE ON UPDATE CASCADE`);
@@ -123,6 +126,7 @@ export class InitialSchema1774819681025 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "role_permissions" DROP CONSTRAINT "FK_178199805b901ccd220ab7740ec"`);
         await queryRunner.query(`ALTER TABLE "team_members" DROP CONSTRAINT "FK_c2bf4967c8c2a6b845dadfbf3d4"`);
         await queryRunner.query(`ALTER TABLE "team_members" DROP CONSTRAINT "FK_fdad7d5768277e60c40e01cdcea"`);
+        await queryRunner.query(`ALTER TABLE "registration_keys" DROP CONSTRAINT "FK_3bd1baf905c78e5b8b787246c5a"`);
         await queryRunner.query(`ALTER TABLE "webhooks" DROP CONSTRAINT "FK_dbecd97048eef1ff16f24a01313"`);
         await queryRunner.query(`ALTER TABLE "webhook_events" DROP CONSTRAINT "FK_7c857d21e12e81fd6ce8585d057"`);
         await queryRunner.query(`ALTER TABLE "reports" DROP CONSTRAINT "FK_fddee96a7e01bddcc3e5eb610bf"`);
@@ -144,18 +148,19 @@ export class InitialSchema1774819681025 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "skills" DROP CONSTRAINT "FK_c8e84d8dab61c6ab97f9366df8a"`);
         await queryRunner.query(`ALTER TABLE "skills" DROP CONSTRAINT "FK_06d267f85858229c10a01a08ad7"`);
         await queryRunner.query(`ALTER TABLE "invoices" DROP CONSTRAINT "FK_4237f4b816fec1df81bd85f833f"`);
-        await queryRunner.query(`ALTER TABLE "teams" DROP CONSTRAINT "FK_858389ddeb0bd6c6bf4e323f91e"`);
         await queryRunner.query(`ALTER TABLE "users" DROP CONSTRAINT "FK_f3d6aea8fcca58182b2e80ce979"`);
         await queryRunner.query(`ALTER TABLE "notifications" DROP CONSTRAINT "FK_928914a0743f50e6f83a90cdda9"`);
         await queryRunner.query(`ALTER TABLE "notifications" DROP CONSTRAINT "FK_db873ba9a123711a4bff527ccd5"`);
         await queryRunner.query(`ALTER TABLE "assignments" DROP CONSTRAINT "FK_29d76e75c370b79104de29560c7"`);
         await queryRunner.query(`ALTER TABLE "assignments" DROP CONSTRAINT "FK_cc9ed03c1ca2d53774480c04683"`);
+        await queryRunner.query(`ALTER TABLE "tickets" DROP CONSTRAINT "FK_abf92dbbc698fa3b7118e94d8cf"`);
         await queryRunner.query(`ALTER TABLE "tickets" DROP CONSTRAINT "FK_46ba2e4e917962b6211cd78f25c"`);
         await queryRunner.query(`ALTER TABLE "tickets" DROP CONSTRAINT "FK_7a1f978a1c1a6b2b1133014b4b2"`);
         await queryRunner.query(`ALTER TABLE "tickets" DROP CONSTRAINT "FK_7abac3d1c71638288916909d357"`);
         await queryRunner.query(`ALTER TABLE "tickets" DROP CONSTRAINT "FK_92956078210b77b3704fc5befc4"`);
         await queryRunner.query(`ALTER TABLE "tickets" DROP CONSTRAINT "FK_41de538b3eed286f53dd678b030"`);
         await queryRunner.query(`ALTER TABLE "tickets" DROP CONSTRAINT "FK_98f00985a13412ab11f4d1c1000"`);
+        await queryRunner.query(`ALTER TABLE "teams" DROP CONSTRAINT "FK_858389ddeb0bd6c6bf4e323f91e"`);
         await queryRunner.query(`ALTER TABLE "service_types" DROP CONSTRAINT "FK_25b5807d12d1ea10f549613b10b"`);
         await queryRunner.query(`ALTER TABLE "customers" DROP CONSTRAINT "FK_fac3145c49520eae6248715b26b"`);
         await queryRunner.query(`ALTER TABLE "locations" DROP CONSTRAINT "FK_6ccf3c1c271638b4782216853a9"`);
@@ -175,6 +180,7 @@ export class InitialSchema1774819681025 implements MigrationInterface {
         await queryRunner.query(`DROP INDEX "public"."IDX_c2bf4967c8c2a6b845dadfbf3d"`);
         await queryRunner.query(`DROP INDEX "public"."IDX_fdad7d5768277e60c40e01cdce"`);
         await queryRunner.query(`DROP TABLE "team_members"`);
+        await queryRunner.query(`DROP TABLE "registration_keys"`);
         await queryRunner.query(`DROP TABLE "webhooks"`);
         await queryRunner.query(`DROP TABLE "webhook_events"`);
         await queryRunner.query(`DROP TYPE "public"."webhook_events_status_enum"`);
@@ -206,7 +212,6 @@ export class InitialSchema1774819681025 implements MigrationInterface {
         await queryRunner.query(`DROP TABLE "skills"`);
         await queryRunner.query(`DROP TABLE "invoices"`);
         await queryRunner.query(`DROP TYPE "public"."invoices_status_enum"`);
-        await queryRunner.query(`DROP TABLE "teams"`);
         await queryRunner.query(`DROP TABLE "users"`);
         await queryRunner.query(`DROP TYPE "public"."users_status_enum"`);
         await queryRunner.query(`DROP TYPE "public"."users_role_enum"`);
@@ -217,6 +222,7 @@ export class InitialSchema1774819681025 implements MigrationInterface {
         await queryRunner.query(`DROP TABLE "tickets"`);
         await queryRunner.query(`DROP TYPE "public"."tickets_status_enum"`);
         await queryRunner.query(`DROP TYPE "public"."tickets_priority_enum"`);
+        await queryRunner.query(`DROP TABLE "teams"`);
         await queryRunner.query(`DROP TABLE "service_types"`);
         await queryRunner.query(`DROP TABLE "customers"`);
         await queryRunner.query(`DROP TYPE "public"."customers_status_enum"`);

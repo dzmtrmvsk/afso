@@ -12,7 +12,7 @@ export function RegisterPage() {
     password: '',
     firstName: '',
     lastName: '',
-    organizationName: '',
+    registrationKey: '',
   });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -62,7 +62,7 @@ export function RegisterPage() {
 
             <Input label="Password" name="password" type="password" value={form.password} onChange={handleChange} placeholder="Min 8 characters" required />
 
-            <Input label="Company / Organization" name="organizationName" value={form.organizationName} onChange={handleChange} placeholder="e.g. Acme Corp" required />
+            <Input label="Registration Key" name="registrationKey" value={form.registrationKey} onChange={handleChange} placeholder="Enter your key (Super Admin or Org key)" required />
 
             <Button type="submit" className="w-full" isLoading={isLoading}>
               Create Account

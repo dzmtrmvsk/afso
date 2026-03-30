@@ -1,7 +1,6 @@
 export const UserRole = {
-  ADMIN: 'admin',
+  SUPER_ADMIN: 'super_admin',
   MANAGER: 'manager',
-  DISPATCHER: 'dispatcher',
   AGENT: 'agent',
 } as const;
 export type UserRole = (typeof UserRole)[keyof typeof UserRole];
@@ -40,8 +39,9 @@ export interface User {
   role: UserRole;
   status: UserStatus;
   phone?: string;
-  organizationId: string;
+  organizationId?: string;
   organization?: Organization;
+  position?: string;
   skills?: string[];
   currentLoad: number;
   createdAt: string;
@@ -76,6 +76,14 @@ export interface Ticket {
   customer?: Customer;
   serviceTypeId?: string;
   serviceType?: ServiceType;
+  teamId?: string;
+  team?: Team;
+  contactName?: string;
+  contactPhone?: string;
+  address?: string;
+  startedAt?: string;
+  pausedAt?: string;
+  totalWorkTimeMs: number;
   customFields?: Record<string, unknown>;
   requiredSkills?: string[];
   estimatedDurationMinutes: number;
@@ -184,6 +192,16 @@ export interface PaginatedResponse<T> {
   page?: number;
   limit?: number;
   totalPages?: number;
+}
+
+export interface RegistrationKey {
+  id: string;
+  key: string;
+  organizationName: string;
+  organizationId?: string;
+  used: boolean;
+  usedByEmail?: string;
+  createdAt: string;
 }
 
 export interface AuthResponse {

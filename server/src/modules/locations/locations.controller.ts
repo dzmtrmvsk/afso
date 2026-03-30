@@ -13,7 +13,7 @@ export class LocationsController {
   constructor(private readonly locationsService: LocationsService) {}
 
   @Post()
-  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.DISPATCHER)
+  @Roles(UserRole.MANAGER)
   create(@Body() createLocationDto: CreateLocationDto, @Request() req: AuthenticatedRequest) {
     return this.locationsService.create(createLocationDto, req.user.organizationId);
   }
@@ -29,13 +29,13 @@ export class LocationsController {
   }
 
   @Patch(':id')
-  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.DISPATCHER)
+  @Roles(UserRole.MANAGER)
   update(@Param('id') id: string, @Body() updateLocationDto: UpdateLocationDto, @Request() req: AuthenticatedRequest) {
     return this.locationsService.update(id, updateLocationDto, req.user.organizationId);
   }
 
   @Delete(':id')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.MANAGER)
   remove(@Param('id') id: string, @Request() req: AuthenticatedRequest) {
     return this.locationsService.remove(id, req.user.organizationId);
   }

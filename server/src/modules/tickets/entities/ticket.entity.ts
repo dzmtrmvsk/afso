@@ -10,6 +10,7 @@ import { Escalation } from '../../sla/entities/escalation.entity';
 import { Location } from '../../locations/entities/location.entity';
 import { Customer } from '../../customers/entities/customer.entity';
 import { ServiceType } from '../../service-types/entities/service-type.entity';
+import { Team } from '../../teams/entities/team.entity';
 
 export enum TicketPriority {
   LOW = 'low',
@@ -110,6 +111,30 @@ export class Ticket {
 
   @Column({ type: 'int', default: 0 })
   estimatedDurationMinutes: number;
+
+  @ManyToOne(() => Team, { nullable: true })
+  team: Team;
+
+  @Column({ nullable: true })
+  teamId: string;
+
+  @Column({ nullable: true })
+  contactName: string;
+
+  @Column({ nullable: true })
+  contactPhone: string;
+
+  @Column({ nullable: true })
+  address: string;
+
+  @Column({ type: 'timestamp', nullable: true })
+  startedAt: Date;
+
+  @Column({ type: 'timestamp', nullable: true })
+  pausedAt: Date;
+
+  @Column({ type: 'int', default: 0 })
+  totalWorkTimeMs: number;
 
   @CreateDateColumn()
   createdAt: Date;

@@ -4,11 +4,8 @@ import { ProtectedRoute } from '@/components/layout/ProtectedRoute'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { LoginPage } from '@/pages/auth/LoginPage'
 import { RegisterPage } from '@/pages/auth/RegisterPage'
-import { DashboardPage } from '@/pages/dashboard/DashboardPage'
 import { TicketsPage } from '@/pages/tickets/TicketsPage'
 import { TicketDetailPage } from '@/pages/tickets/TicketDetailPage'
-import { CreateTicketPage } from '@/pages/tickets/CreateTicketPage'
-import { UsersPage } from '@/pages/users/UsersPage'
 import { CustomersPage } from '@/pages/customers/CustomersPage'
 import { TeamsPage } from '@/pages/teams/TeamsPage'
 import { LocationsPage } from '@/pages/locations/LocationsPage'
@@ -16,6 +13,11 @@ import { ServiceTypesPage } from '@/pages/service-types/ServiceTypesPage'
 import { SlaPage } from '@/pages/sla/SlaPage'
 import { AssignmentsPage } from '@/pages/assignments/AssignmentsPage'
 import { ProfilePage } from '@/pages/profile/ProfilePage'
+import { SuperAdminPage } from './pages/superadmin/SuperAdminPage'
+import { MyTasksPage } from './pages/tasks/MyTasksPage'
+import { DashboardPage } from './pages/dashboard/DashboardPage'
+import { CreateTicketPage } from './pages/tickets/CreateTicketPage'
+import { UsersPage } from './pages/users/UsersPage'
 
 function App() {
   return (
@@ -44,6 +46,8 @@ function App() {
             <Route path="/sla" element={<SlaPage />} />
             <Route path="/assignments" element={<AssignmentsPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/superadmin" element={<SuperAdminPage />} />
+            <Route path="/my-tasks" element={<MyTasksPage />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/dashboard" replace />} />

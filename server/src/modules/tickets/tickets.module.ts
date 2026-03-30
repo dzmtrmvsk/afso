@@ -4,6 +4,8 @@ import { Ticket } from './entities/ticket.entity';
 import { TicketComment } from './entities/ticket-comment.entity';
 import { TicketHistory } from './entities/ticket-history.entity';
 import { TicketAttachment } from './entities/ticket-attachment.entity';
+import { Customer } from '../customers/entities/customer.entity';
+import { ServiceType } from '../service-types/entities/service-type.entity';
 import { TicketsService } from './tickets.service';
 import { TicketsController } from './tickets.controller';
 import { SlaModule } from '../sla/sla.module';
@@ -18,6 +20,8 @@ import { QueuesModule } from '../queues/queues.module';
       TicketComment,
       TicketHistory,
       TicketAttachment,
+      Customer,
+      ServiceType,
     ]),
     SlaModule,
     AuditModule,

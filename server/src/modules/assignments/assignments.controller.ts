@@ -12,7 +12,7 @@ export class AssignmentsController {
   constructor(private readonly assignmentsService: AssignmentsService) {}
 
   @Post()
-  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.DISPATCHER)
+  @Roles(UserRole.MANAGER)
   create(@Body() createAssignmentDto: CreateAssignmentDto) {
     return this.assignmentsService.create(createAssignmentDto);
   }

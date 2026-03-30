@@ -13,7 +13,7 @@ export class CustomersController {
   constructor(private readonly customersService: CustomersService) {}
 
   @Post()
-  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.DISPATCHER)
+  @Roles(UserRole.MANAGER)
   create(@Body() createCustomerDto: CreateCustomerDto, @Request() req: AuthenticatedRequest) {
     return this.customersService.create(createCustomerDto, req.user.organizationId);
   }
@@ -29,13 +29,13 @@ export class CustomersController {
   }
 
   @Patch(':id')
-  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.DISPATCHER)
+  @Roles(UserRole.MANAGER)
   update(@Param('id') id: string, @Body() updateCustomerDto: UpdateCustomerDto, @Request() req: AuthenticatedRequest) {
     return this.customersService.update(id, updateCustomerDto, req.user.organizationId);
   }
 
   @Delete(':id')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.MANAGER)
   remove(@Param('id') id: string, @Request() req: AuthenticatedRequest) {
     return this.customersService.remove(id, req.user.organizationId);
   }

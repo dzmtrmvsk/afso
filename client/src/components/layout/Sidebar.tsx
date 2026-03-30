@@ -7,9 +7,10 @@ import {
   MapPin,
   Wrench,
   Shield,
-  ClipboardList,
   UserCircle,
   LogOut,
+  Crown,
+  Hammer,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
@@ -17,14 +18,15 @@ import { UserRole } from '@/types';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, roles: null },
-  { name: 'Tickets', href: '/tickets', icon: Ticket, roles: null },
-  { name: 'My Assignments', href: '/assignments', icon: ClipboardList, roles: [UserRole.AGENT] },
-  { name: 'Customers', href: '/customers', icon: Building2, roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.DISPATCHER] },
-  { name: 'Teams', href: '/teams', icon: Users, roles: [UserRole.ADMIN, UserRole.MANAGER] },
-  { name: 'Users', href: '/users', icon: UserCircle, roles: [UserRole.ADMIN, UserRole.MANAGER] },
-  { name: 'Locations', href: '/locations', icon: MapPin, roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.DISPATCHER] },
-  { name: 'Service Types', href: '/service-types', icon: Wrench, roles: [UserRole.ADMIN, UserRole.MANAGER] },
-  { name: 'SLA Policies', href: '/sla', icon: Shield, roles: [UserRole.ADMIN, UserRole.MANAGER] },
+  { name: 'Tickets', href: '/tickets', icon: Ticket, roles: [UserRole.MANAGER] },
+  { name: 'My Tasks', href: '/my-tasks', icon: Hammer, roles: [UserRole.AGENT] },
+  { name: 'Customers', href: '/customers', icon: Building2, roles: [UserRole.MANAGER] },
+  { name: 'Teams', href: '/teams', icon: Users, roles: [UserRole.MANAGER] },
+  { name: 'Users', href: '/users', icon: UserCircle, roles: [UserRole.MANAGER] },
+  { name: 'Locations', href: '/locations', icon: MapPin, roles: [UserRole.MANAGER] },
+  { name: 'Service Types', href: '/service-types', icon: Wrench, roles: [UserRole.MANAGER] },
+  { name: 'SLA Policies', href: '/sla', icon: Shield, roles: [UserRole.MANAGER] },
+  { name: 'Super Admin', href: '/superadmin', icon: Crown, roles: [UserRole.SUPER_ADMIN] },
 ];
 
 export function Sidebar() {
